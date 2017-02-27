@@ -1,0 +1,20 @@
+{% extends 'games/base.html' %}
+
+{% block content %}
+
+<h1>Enter Data</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'games:update_ids' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <input type="submit" value="Update IDs" />
+</form>
+<form action="{% url 'games:log_game' %}" method="post">
+  {% csrf_token %}
+  {{ game_log_form.as_p }}
+  <input type="submit" value="Log Game"/>
+</form>
+
+{% endblock content %}

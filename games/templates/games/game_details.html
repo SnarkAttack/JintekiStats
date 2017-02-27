@@ -1,0 +1,25 @@
+{% extends 'games/base.html' %}
+
+{% block content %}
+<div>
+  {% if game.player_side %}
+    <p>Played as: {{ runner_name }}</p>
+    <p>{{ game.runner_score }}</p>
+    <p>Played against: {{ corp_name }}</p>
+    <p>{{ game.corp_score }}</p>
+  {% else %}
+    <p>Played as: {{ corp_name }}</p>
+    <p>{{ game.corp_score }}</p>
+    <p>Played against: {{ runner_name }}</p>
+    <p>{{ game.runner_score }}</p>
+  {% endif %}
+  <p>{{ endgame_text }}</p>
+  <p>{{ game.game_date }}</p>
+  {% if game.online %}
+    <p>Game was played online</p>
+  {% else %}
+    <p>Game played in real life! Atta boy!</p>
+  {% endif %}
+</div>
+
+{% endblock content %}
