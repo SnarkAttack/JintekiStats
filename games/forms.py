@@ -20,8 +20,7 @@ class GameLogForm(forms.Form):
     winner = forms.ChoiceField(choices=[(True, 'Runner'), (False, 'Corp')])
     win_type = forms.ChoiceField(choices=[(0, 'Agenda Points'), (1, 'Flatline'), (2, 'Mill'), (3, 'Concede')])
     # Just want to fill in for based on time entered
-    #game_date = forms.DateTimeField()
-    online = forms.BooleanField(required=False)
+    opponent_username = forms.CharField(required=False)
 
 class StatsRequestForm(forms.Form):
     player_side = forms.ChoiceField(choices=[(True, 'Runner'), (False, 'Corp')])
@@ -29,3 +28,7 @@ class StatsRequestForm(forms.Form):
     runner_id = forms.ChoiceField(choices=get_runner_ids(), required=False)
     corp_faction = forms.ChoiceField(choices=[(None, '---'), ('haas-bioroid', 'Haas-Bioroid'), ('jinteki', 'Jinteki'), ('nbn', 'NBN'), ('weyland-consortium', 'Weyland')], required=False)
     corp_id = forms.ChoiceField(choices=get_corp_ids(), required=False)
+
+class GameLogJintekiTextForm(forms.Form):
+    full_text = forms.CharField(widget=forms.Textarea)
+    full_detail = forms.BooleanField(required=False)

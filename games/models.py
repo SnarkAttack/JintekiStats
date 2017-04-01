@@ -18,15 +18,16 @@ class PlayerGameManager(models.Manager):
 
 # Create your models here.
 class Game(models.Model):
+    runner_name = models.CharField(max_length=32, default=None, null=True)
     player_side = models.BooleanField(default=True)
     runner_id = models.IntegerField(default=0)
     runner_score = models.IntegerField(default=0)
+    corp_name = models.CharField(max_length=32, default=None, null=True)
     corp_id = models.IntegerField(default=0)
     corp_score = models.IntegerField(default=0)
     winner = models.BooleanField(default=True)
     win_type = models.IntegerField(default=0)
-    game_date = models.DateField('date played')
-    online = models.BooleanField(default=False)
+    game_date = models.DateTimeField('date played')
     exact_match = models.IntegerField(default=1)
 
     objects = GameManager()
@@ -40,7 +41,6 @@ class PlayerGame(models.Model):
     winner = models.BooleanField(default=True)
     win_type = models.IntegerField(default=0)
     game_date = models.DateTimeField('date played')
-    online = models.BooleanField(default=False)
     exact_match = models.IntegerField(default=1)
 
     objects = PlayerGameManager()

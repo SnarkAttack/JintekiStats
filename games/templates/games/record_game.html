@@ -6,6 +6,7 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
+<p>Enter details about the game here</p>
 <form action="{% url 'games:update_ids' %}" method="post">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ request.path }}">
@@ -14,6 +15,14 @@
 <form action="{% url 'games:log_game' %}" method="post">
   {% csrf_token %}
   {{ game_log_form.as_p }}
+  <input type="submit" value="Log Game"/>
+</form>
+
+<p>OR drop full Jinteki game logs here</p>
+
+<form action="{%url 'games:log_game' %}" method="post">
+  {% csrf_token %}
+  {{ game_log_jinteki_text_form.as_p }}
   <input type="submit" value="Log Game"/>
 </form>
 
