@@ -41,7 +41,8 @@ class GameLogger(View):
                 runner_id=int(data['runner_id']),
                 runner_score=int(data['runner_score']),
                 game_date=datetime.datetime.now(),
-                online=online,
+                opponent_username=data['opponent_username'],
+                #online=online,
                 exact_match=1
         )
         if created:
@@ -57,7 +58,8 @@ class GameLogger(View):
                     runner_id=int(data['runner_id']),
                     runner_score=int(data['runner_score']),
                     game_date=datetime.datetime.now(),
-                    online=online,
+                    opponent_username=data['opponent_username'],
+                    #online=online,
                     exact_match=game.exact_match+1
             )
             if retry_created:
@@ -107,7 +109,7 @@ class GameListDisplay():
         self.id = game_id
         self.result_text = result_text
 
-def compile_game_detail_list(games_list):
+def compile_game_detail_list(games_list, username):
     game_details_list = []
     for game in games_list:
         runner_name = Identity.objects.filter(code=game.runner_id)[0].title.split(':')[0]
@@ -186,7 +188,7 @@ class StatsViewer(View):
         stats_request_form = StatsRequestForm()
         if(data):
             games = None
-            if data.get('runner_name') == username:
+            if data.get('runner_name') != username:
                 # We are looking at runner stats
                 if data.get('runner_id'):
                     if data.get('corp_id'):
