@@ -38,14 +38,14 @@ class BaseStats():
 class StatsViewer(View):
 
     def get(self, request):
-        username = ""
         username = request.user.username
         data = request.GET
         stats_request_form = StatsRequestForm()
         if(data):
             games = None
-            if data.get('player_side') == True:
+            if data.get('player_side') == 'True':
                 # We are looking at runner stats
+                print "Runner"
                 if data.get('runner_id'):
                     if data.get('corp_id'):
                         games = Game.objects.filter(runner_name=username, runner_id__in=[data['runner_id']], corp_id__in=[data['corp_id']])
