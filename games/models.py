@@ -3,10 +3,10 @@ from __future__ import unicode_literals
 from django.db import models
 
 class GameManager(models.Manager):
-    def store_game(self, player_side, runner_id, runner_score, corp_id, corp_score, winner, win_type, game_date, opponent_username, exact_match):
-        game = self.get_or_create(player_side=player_side, runner_id=runner_id, runner_score=runner_score,
-                                    corp_id=corp_id, corp_score=corp_score, winner=winner,
-                                    win_type=win_type, game_date=game_date, opponent_username=opponent_username, exact_match=exact_match)
+    def store_game(self, runner_name, runner_id, runner_score, corp_name, corp_id, corp_score, winner, win_type, game_date, exact_match):
+        game = self.get_or_create(runner_name=runner_name, runner_id=runner_id, runner_score=runner_score,
+                                    corp_name=corp_name, corp_id=corp_id, corp_score=corp_score, winner=winner,
+                                    win_type=win_type, game_date=game_date, exact_match=exact_match)
         return game
 
 # Create your models here.
@@ -36,3 +36,14 @@ class Identity(models.Model):
     side_code = models.CharField(max_length=6)
 
     objects = IdentityManager()
+
+class JintekiUsernameManager(models.Manager):
+    def register_username(self, jinteki_username, site_username):
+        new_username = self.get_or_create(jinteki_username=jinteki_username, site_username=site_username)
+        return new_username
+
+class JintekiUsername(models.Model):
+    jinteki_username = models.CharField(max_length=32)
+    site_username = models.CharField(max_length=32)
+
+    objects = JintekiUsernameManager()

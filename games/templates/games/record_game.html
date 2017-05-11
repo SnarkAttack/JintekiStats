@@ -20,10 +20,10 @@
 
 <p>OR drop full Jinteki game logs here</p>
 
-<form action="{%url 'games:log_game' %}" method="post">
+<form action="{%url 'games:log_full_game' %}" method="post">
   {% csrf_token %}
   {{ game_log_jinteki_text_form.as_p }}
-  <input type="submit" value="Log Game"/>
+  <input type="submit" value="Log Full Game"/>
 </form>
 
 {% endblock content %}
