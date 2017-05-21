@@ -34,6 +34,7 @@ class GameLogJintekiTextForm(forms.Form):
     full_detail = forms.BooleanField(required=False)
     runner_id = forms.ChoiceField(choices=get_runner_ids())
     corp_id = forms.ChoiceField(choices=get_corp_ids())
+    deck_name = forms.CharField(required=False)
 
 class RegisterUsernameForm(forms.Form):
     new_username = forms.CharField(max_length=32)

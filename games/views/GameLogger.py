@@ -19,11 +19,10 @@ class GameLogger(View):
 
     def post(self, request):
         data = request.POST
+        print data
         winner = True if data['winner'] == 'True' else False
-        runner_name = request.user.username if player_side else opponent_username
-        corp_name = opponent_username if player_side else request.user.username
-
-        stats = gather_stats(data['full_text'])
+        runner_name = request.user.username if data['player_side'] == 'True' else data['opponent_username']
+        corp_name = data['opponent_username'] if data['player_side'] == 'True' else request.user.username
 
         (game, created) = Game.objects.store_game(
                 win_type=int(data['win_type']),
@@ -86,6 +85,17 @@ class GameLoggerFullText(View):
                 runner_score=int(stats['runner_score']),
                 game_date=datetime.datetime.now(),
                 corp_name=stats['corp_name'],
+                runner_credits = stats['runner_click_for_credit'],
+                corp_credits = stats['corp_click_for_credit'],
+                runner_draws = stats['runner_draws'],
+                corp_draws = stats['corp_draws'],
+                runner_installs = stats['installed_run'],
+                corp_installs = stats['installed_corp'],
+                runner_mulligan = stats['runner_mulligan'],
+                corp_mulligan = stats['corp_mulligan'],
+                runs = stats['runs'],
+                turns = stats['turns'],
+                deck_name = data['deck_name'],
                 #online=online,
                 exact_match=1
         )
@@ -103,6 +113,17 @@ class GameLoggerFullText(View):
                     runner_score=int(stats['runner_score']),
                     game_date=datetime.datetime.now(),
                     corp_name=stats['corp_name'],
+                    runner_credits = stats['runner_click_for_credit'],
+                    corp_credits = stats['corp_click_for_credit'],
+                    runner_draws = stats['runner_draws'],
+                    corp_draws = stats['corp_draws'],
+                    runner_installs = stats['installed_run'],
+                    corp_installs = stats['installed_corp'],
+                    runner_mulligan = stats['runner_mulligan'],
+                    corp_mulligan = stats['corp_mulligan'],
+                    runs = stats['runs'],
+                    turns = stats['turns'],
+                    deck_name = data['deck_name'],
                     #online=online,
                     exact_match=game.exact_match+1
             )
@@ -113,14 +134,6 @@ class GameLoggerFullText(View):
                 return HttpResponseRedirect(reverse("games:list_games"))
 
 
-stats = {'corp_name': "", 'runner_name': "", 'runner_click_for_credit': 0,
-            'runner_draws': 0, 'runner_played': {}, 'corp_played': {}, 'installedRun': {},
-            'corp_click_for_credit': 0, 'corp_uses': {}, 'corp_draws': 0,
-            'runner_score': 0, 'corp_score': 0, 'runner_agendas': {},
-            'corp_agendas': {}, 'runner_uses': {}, 'pumps': {}, 'endTurn': {},
-            'runs': {}, "ICE": {}, 'server': {}, 'rez': {}, 'advanceCount': 0, 'winner': None,
-            'win_type': -1}
-
 def scoring_action(line):
     if "scores" in line or "steals" in line or ("as an agenda" in line and "force" not in line):
         return True
@@ -128,6 +141,15 @@ def scoring_action(line):
         return False
 
 def gather_stats(game_log):
+
+    stats = {'corp_name': "", 'runner_name': "", 'runner_click_for_credit': 0,
+                'runner_draws': 0, 'runner_played': {}, 'corp_played': {}, 'installed_run': 0,
+                'installed_corp': 0, 'corp_click_for_credit': 0, 'corp_uses': {}, 'corp_draws': 0,
+                'runner_score': 0, 'corp_score': 0, 'runner_agendas': {},
+                'corp_agendas': {}, 'runner_uses': {}, 'pumps': {}, 'endTurn': {},
+                'runs': 0, "ICE": {}, 'server': {}, 'rez': {}, 'advanceCount': 0, 'winner': None,
+                "turns": 0, 'win_type': -1, 'runner_mullgan': True, 'corp_mulligan': True}
+
     game_text = []
     for line in game_log.split('\n'):
         #if playerName in line or scoring_action(line) or "wins the game" in line:
@@ -135,19 +157,23 @@ def gather_stats(game_log):
         if "wins the game" in line:
             break
 
-        (runner_name, corp_name) = getPlayers(game_text)
+        (runner_name, corp_name, runner_mulligan, corp_mulligan) = getPlayers(game_text)
 
-    return getStats(game_text, runner_name, corp_name, stats)
+    return getStats(game_text, runner_name, corp_name, runner_mulligan, corp_mulligan, stats)
 
 def getPlayers(game_text):
     corp_name = ""
     runner_name = ""
+    corp_mulligan = False
+    runner_mulligan = False
     for line in game_text:
         if 'takes a mulligan.' in line:
             if corp_name is "":
                 corp_name = line[:-len(' takes a mulligan.')]
+                corp_mulligan = True
             else:
                 runner_name = line[:-len(' takes a mulligan.')]
+                runner_mulligan = True
                 break
         elif 'keeps their hand.' in line:
             if corp_name is "":
@@ -156,11 +182,13 @@ def getPlayers(game_text):
                 runner_name = line[:-len(' keeps their hand.')]
                 break
 
-    return (runner_name, corp_name)
+    return (runner_name, corp_name, runner_mulligan, corp_mulligan)
 
-def getStats(game_text, runner_name, corp_name, stats):
+def getStats(game_text, runner_name, corp_name, runner_mulligan, corp_mulligan, stats):
     stats['runner_name'] = runner_name
     stats['corp_name'] = corp_name
+    stats['runner_mulligan'] = runner_mulligan
+    stats['corp_mulligan'] = corp_mulligan
     for line in game_text:
         if line.startswith("!"):
             continue
@@ -174,19 +202,18 @@ def getStats(game_text, runner_name, corp_name, stats):
                 stats['runner_draws'] = stats.get('runner_draws', 0) + 1
             else:
                 stats['corp_draws'] = stats.get('corp_draws', 0) + 1
-        # elif " to advance " in line:
-        #     stats['advanceCount'] = stats.get('advanceCount', 0) + 1
-        # elif "to install a card in" in line:
-        #     server = re.search(r'(ICE protecting|a card in) ([()&\w\s]+)\.$', line, re.UNICODE)
-        #     server_name = re.sub(r'\s\(new\sremote\)', '', server.group(2))
-        #     stats['server'][server_name] = stats['server'].get(server_name, 0) + 1
-        # elif "to install ICE protecting" in line:
-        #     server = re.search(r'(ICE protecting|a card in) ([()&\w\s]+)\.$', line, re.UNICODE)
-        #     server_name = re.sub(r'\s\(new\sremote\)', '', server.group(2))
-        #     stats['ICE'][server_name] = stats['ICE'].get(server_name, 0) + 1
-        # elif "to install " in line:
-        #     card_name = re.search(r' to install ([&"\.\'!:\w\s-]+\.$)', line, re.UNICODE)
-        #     stats['installedRun'][card_name.group(1)] = stats['installedRun'].get(card_name.group(1), 0) +1
+        elif "to install a card in" in line:
+            #server = re.search(r'(ICE protecting|a card in) ([()&\w\s]+)\.$', line, re.UNICODE)
+            #server_name = re.sub(r'\s\(new\sremote\)', '', server.group(2))
+            stats['installed_corp'] = stats.get('installed_corp', 0) + 1
+        elif "to install ICE protecting" in line:
+            #server = re.search(r'(ICE protecting|a card in) ([()&\w\s]+)\.$', line, re.UNICODE)
+            #server_name = re.sub(r'\s\(new\sremote\)', '', server.group(2))
+            stats['installed_corp'] = stats.get('installed_corp', 0) + 1
+        elif "to install " in line and "uses" not in line:
+            print
+            #card_name = re.search(r' to install ([&"\.\'!:\w\s-]+\.$)', line, re.UNICODE)
+            stats['installed_run'] = stats.get('installed_run', 0) + 1
         # elif 'uses' in line or 'to use' in line:
         #     print line
         #     if runner_name in line:
@@ -208,9 +235,12 @@ def getStats(game_text, runner_name, corp_name, stats):
         # elif 'rezzes' in line or 'to rez' in line:
         #     card_name = re.search(r'(rezzes|to rez) ([&"\.\'!:\w\s-]+)\.$', line, re.UNICODE)
         #     stats['rez'][card_name.group(2)] = stats['rez'].get(card_name.group(2), 0) + 1
+        elif "started their turn" in line:
+            run_count = re.search(r'started their turn ([\d]+)', line, re.UNICODE)
+            stats['turns'] = int(run_count.group(1))
         elif "to make a run" in line:
-            run_info = re.search(r'(to make a) run on ([&\w\s]+)', line, re.UNICODE)
-            stats['runs'][run_info.group(2)] = stats['runs'].get(run_info.group(2), 0) + 1
+            #run_info = re.search(r'(to make a) run on ([&\w\s]+)', line, re.UNICODE)
+            stats['runs'] = stats.get('runs', 0) + 1
         elif scoring_action(line):
             if runner_name in line:
                 point_value = re.search(r' (scores|steals) ([&"\'!:\w\s-]+) and gains ([\d]+) agenda point', line, re.UNICODE)

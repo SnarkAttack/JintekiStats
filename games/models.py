@@ -3,10 +3,17 @@ from __future__ import unicode_literals
 from django.db import models
 
 class GameManager(models.Manager):
-    def store_game(self, runner_name, runner_id, runner_score, corp_name, corp_id, corp_score, winner, win_type, game_date, exact_match):
+    def store_game(self, runner_name, runner_id, runner_score, corp_name, corp_id,
+                    corp_score, winner, win_type, game_date, exact_match, runner_credits,
+                    corp_credits, runner_draws, corp_draws, runner_installs, corp_installs,
+                    runner_mulligan, corp_mulligan, runs, turns, deck_name):
         game = self.get_or_create(runner_name=runner_name, runner_id=runner_id, runner_score=runner_score,
                                     corp_name=corp_name, corp_id=corp_id, corp_score=corp_score, winner=winner,
-                                    win_type=win_type, game_date=game_date, exact_match=exact_match)
+                                    win_type=win_type, game_date=game_date, exact_match=exact_match,
+                                    runner_credits=runner_credits, corp_credits=corp_credits, runner_draws=runner_draws,
+                                    corp_draws=corp_draws, runner_installs=runner_installs, corp_installs=corp_installs,
+                                    runner_mulligan=runner_mulligan, corp_mulligan=corp_mulligan, runs=runs, turns=turns,
+                                    deck_name=deck_name)
         return game
 
 # Create your models here.
@@ -21,6 +28,19 @@ class Game(models.Model):
     win_type = models.IntegerField(default=0)
     game_date = models.DateTimeField('date played')
     exact_match = models.IntegerField(default=1)
+
+    runner_credits = models.IntegerField(default=None, null=True)
+    corp_credits = models.IntegerField(default=None, null=True)
+    runner_draws = models.IntegerField(default=None, null=True)
+    corp_draws = models.IntegerField(default=None, null=True)
+    runner_installs = models.IntegerField(default=None, null=True)
+    corp_installs = models.IntegerField(default=None, null=True)
+    runner_mulligan = models.NullBooleanField(default=None, null=True)
+    corp_mulligan = models.NullBooleanField(default=None, null=True)
+    runs = models.IntegerField(default=None, null=True)
+    turns = models.IntegerField(default=None, null=True)
+
+    deck_name = models.CharField(max_length=32, default=None, null=True)
 
     objects = GameManager()
 
